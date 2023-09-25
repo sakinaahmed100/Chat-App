@@ -1,15 +1,15 @@
-import { NavLink } from "react-router-dom";
 import { UseFirebaseContext } from "./context/firebaseContext"
+import Header from "./components/Header";
 
 
 export default function Home() {
-    const { signin, LogOut, OpenChat, all_users_array_db, open_chat_user_info, SEND_MESSAGE, currentuser,send_message_value, getValMsg,all_messages_array_db } = UseFirebaseContext()
-   const filtered_users= all_users_array_db?.filter((e)=>{
-    console.log(e.uid);
-    console.log(currentuser.current_user_uid);
+    const { signin, OpenChat, all_users_array_db, open_chat_user_info, SEND_MESSAGE, currentuser, send_message_value, getValMsg, all_messages_array_db } = UseFirebaseContext()
+    const filtered_users = all_users_array_db?.filter((e) => {
+        console.log(e.uid);
+        console.log(currentuser.current_user_uid);
         return (e.uid !== currentuser.current_user_uid)
     })
-   
+
     if (signin) {
         console.log(all_users_array_db);
         console.log(open_chat_user_info);
@@ -18,15 +18,9 @@ export default function Home() {
         return (
             <>
                 <div>
-                    <h1>Chat App</h1>
-                    {signin ? <>
-                        <NavLink to={"profile"}> <button>profile</button></NavLink>
-                        <button onClick={LogOut}>logout</button>
-                        <span>{currentuser?.current_username}</span>
-                    </>
-                        : <>
-                            <NavLink to={"signin"}> <button>SignIn</button></NavLink>
-                            <p> You can only view chats when logged in</p></>}
+                    <Header></Header>
+                    
+                  
 
                     <div>
                         <p>
@@ -50,10 +44,10 @@ export default function Home() {
 
                             </p>
 
-                            <ul style={{display:"flex",flexDirection:"column"}}>
-                                {all_messages_array_db?.map((e,i)=>{
+                            <ul style={{ display: "flex", flexDirection: "column" }}>
+                                {all_messages_array_db?.map((e, i) => {
                                     console.log(e);
-                                    return(<li key={i}>
+                                    return (<li key={i}>
                                         {e.messageText}
 
                                     </li>)
