@@ -10,29 +10,29 @@ export default function firebaseReducer(state, action) {
         }
 
         case "SET_USER": {
-           let uid= action.payload.uid
+            let uid = action.payload.uid
             return {
                 ...state,
                 signin: true,
-                uid:uid,
-               
+                uid: uid,
+
             }
         }
 
-        case "DISPLAY_CURRENT_USER":{
+        case "DISPLAY_CURRENT_USER": {
             const current_user_uid = state.uid;
-           const current_user_data= state.all_users_array_db?.filter((e)=>{
-           return e.uid===current_user_uid
-           })
-           console.log( current_user_data);
+            const current_user_data = state.all_users_array_db?.filter((e) => {
+                return e.uid === current_user_uid
+            })
+            console.log(current_user_data);
 
-            return{
+            return {
                 ...state,
-                currentuser:{
-                    current_user_uid:current_user_data?.[0]?.uid,
-                    current_username:current_user_data?.[0]?.username,
-                    current_user_email:current_user_data?.[0]?.email,
-                    current_user_passsword:current_user_data?.[0]?.password,
+                currentuser: {
+                    current_user_uid: current_user_data?.[0]?.uid,
+                    current_username: current_user_data?.[0]?.username,
+                    current_user_email: current_user_data?.[0]?.email,
+                    current_user_passsword: current_user_data?.[0]?.password,
 
                 }
             }
@@ -80,25 +80,84 @@ export default function firebaseReducer(state, action) {
         }
 
         case "OPEN_CHAT_USER": {
-            let chat_user_uid = action.payload
-            let all_users_data_copy = [...state.all_users_array_db]
-            const open_chat_user_data = all_users_data_copy?.filter((e) => {
-                return (e.uid === chat_user_uid)
-            })
-            console.log(open_chat_user_data)
-            console.log(state)
+            let { open_chat_user_data } = action.payload
             return {
                 ...state,
                 open_chat_user_info: open_chat_user_data,
                 chat: {
-                    chatuid:open_chat_user_data.uid+state.currentuser.current_user_uid,
-                    messages:{
+                    ...state.chat,
+                    messages: {
 
                     }
 
                 }
             }
         }
+
+        case "SetUniqueChatID": {
+            let chatID = action.payload
+            return {
+                ...state,
+                chat: {
+                    ...state.chat,
+                    chatuid: chatID,
+
+
+                }
+            }
+        }
+
+        case "DISPLAY_MESSAGES": {
+            console.log("hi", action.payload);
+
+            let all_messages_array = []
+            const all_messages = action.payload
+            for (const key in all_messages) {
+                if (Object.hasOwnProperty.call(all_messages, key)) {
+                    const all_messages_object = all_messages[key];
+                    console.log(`${key}: ${all_messages_object}`);
+                    const userMessagesObject = {};
+
+                    // Add the 'key' property to userDataObject
+                    userMessagesObject['key'] = key;
+
+                    for (const property in all_messages_object) {
+                        if (Object.hasOwnProperty.call(all_messages_object, property)) {
+                            const value = all_messages_object[property];
+                            console.log(`  ${property}: ${value}`);
+
+                            userMessagesObject[property] = value;
+                        }
+                    }
+                    all_messages_array.push(userMessagesObject);
+
+                }
+            }
+            console.log(all_messages_array);
+            return {
+                ...state,
+                all_messages_array_db: all_messages_array
+
+
+            }
+        }
+
+        case "GET_MESSAGE_INPUT": {
+
+            return {
+                ...state,
+                send_message_value: action.payload
+            }
+        }
+
+        case "EMPTY_INPUT_STATE": {
+            console.log("oooops");
+            return {
+                ...state,
+                send_message_value: ""
+            }
+        }
+
         case "LOG_OUT": {
             return {
                 ...state,

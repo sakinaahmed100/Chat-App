@@ -3,7 +3,7 @@ import firebaseReducer from "../reducer/firebaseReducer";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "firebase/auth";
 import { auth, db, dbRef } from "../firebase.config"
 import { useNavigate } from 'react-router-dom';
-import { ref, set, child, get } from "firebase/database";
+import { ref, set, child, get, push } from "firebase/database";
 
 const FirebaseContext = createContext()
 
@@ -13,7 +13,7 @@ const initialState = {
   password: "",
   userinfo: "",
   all_users_array_db: [],
-  open_chat_user_info:{},
+  open_chat_user_info: {},
 
 }
 
@@ -49,12 +49,73 @@ const FirebaseContextProvider = ({ children }) => {
     });
   }
 
+  function createOrRetrieveChat(senderUID, recipientUID) {
+
+    // Create a unique chat ID based on user UIDs or other criteria
+    const chatID = generateUniqueChatID(senderUID, recipientUID);
+
+    // Check if the chat already exists
+    get(child(dbRef, `chats/${chatID}`))
+      .then((snapshot) => {
+        if (snapshot.exists()) {
+          // Chat already exists, retrieve chat history
+          const chatHistory = snapshot.val();
+          console.log('Chat already exists. Retrieved chat history:', chatHistory);
+          console.log('messages:', chatHistory.messages);
+          getMessagesFromDatabase(chatID)
+
+        } else {
+          // Chat doesn't exist, create a new chat entry
+          const newChat = {
+            participants: [senderUID, recipientUID],
+            // createdTimestamp: db.ServerValue.TIMESTAMP // Use Firebase server timestamp
+          };
+          set(ref(db, `chats/${chatID}`), {
+            newChat
+          })
+            .then(() => {
+              // Data saved successfully!
+            })
+            .catch((error) => {
+              console.log(error);
+
+            });
+        }
+      })
+      .catch((error) => {
+        console.error('Error checking chat existence:', error);
+      });
+  }
+  function generateUniqueChatID(senderUID, recipientUID) {
+    const sortedUIDs = [senderUID, recipientUID]?.sort();
+
+  // Create a chat ID by concatenating sorted UIDs
+  const chatID = sortedUIDs.join('_');
+    dispatch({ type: "SetUniqueChatID", payload: chatID })
+    return chatID;
+  }
+
+
   const getUsersFromDatabase = () => {
     get(child(dbRef, 'chat_users')).then((snapshot) => {
       if (snapshot.exists()) {
         console.log(snapshot.val());
         dispatch({ type: "DISPLAY_USERS", payload: snapshot.val() })
-        dispatch({ type: "DISPLAY_CURRENT_USER"}); // Update state with the user
+        dispatch({ type: "DISPLAY_CURRENT_USER" }); // Update state with the user
+
+      } else {
+        console.log("No data available");
+      }
+    }).catch((error) => {
+      console.error(error);
+    });
+  }
+
+  const getMessagesFromDatabase = (chatid) => {
+    get(child(dbRef, `chats/${chatid}/messages`)).then((snapshot) => {
+      if (snapshot.exists()) {
+        console.log(snapshot.val());
+        dispatch({ type: "DISPLAY_MESSAGES", payload: snapshot.val() })
 
       } else {
         console.log("No data available");
@@ -120,19 +181,52 @@ const FirebaseContextProvider = ({ children }) => {
   }
 
   const OpenChat = (uid) => {
-    dispatch({ type: "OPEN_CHAT_USER", payload: uid })
+    let all_users_data_copy = [...state.all_users_array_db]
+    const open_chat_user_data = all_users_data_copy?.filter((e) => {
+      return (e.uid === uid)
+    })
+
+    console.log(state)
+    createOrRetrieveChat(state.currentuser.current_user_uid, open_chat_user_data?.[0]?.uid);
+
+    dispatch({ type: "OPEN_CHAT_USER", payload: { open_chat_user_data } })
+
+
   }
 
-  const SEND_MESSAGE=()=>{
-    console.log("hi");
+  function sendMessage(chatID, senderUID, recipientUID, messageText) {
+
+
+    // Push the new message to the chat's messages node
+    console.log(state.chat);
+    push(ref(db, `chats/${state.chat.chatuid}/messages`), {
+      senderUID: senderUID,
+      recipientUID: recipientUID,
+      messageText: messageText,
+    })
+      .then(() => {
+        // Data saved successfully!
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+
   }
 
-  const getValMsg=(e)=>{
-let {value}=e.target
-console.log(value);
+  const SEND_MESSAGE = () => {
+    console.log(state.send_message_value);
+    sendMessage(state.chat.chatuid, state.currentuser.current_user_uid, state.open_chat_user_info?.[0]?.uid, state.send_message_value);
+    getMessagesFromDatabase(state.chat.chatuid)
+    dispatch({type:"EMPTY_INPUT_STATE"})
+
   }
 
-  return (<FirebaseContext.Provider value={{ ...state, getValue, SignUp, SignIn, LogOut, OpenChat,SEND_MESSAGE,getValMsg }}>{children}</FirebaseContext.Provider>)
+  const getValMsg = (e) => {
+    let value = e.target.value
+    dispatch({ type: "GET_MESSAGE_INPUT", payload: value })
+  }
+
+  return (<FirebaseContext.Provider value={{ ...state, getValue, SignUp, SignIn, LogOut, OpenChat, SEND_MESSAGE, getValMsg }}>{children}</FirebaseContext.Provider>)
 }
 
 const UseFirebaseContext = () => {
