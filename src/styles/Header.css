@@ -43,7 +43,7 @@
 }
 @media(min-width:300px){
     .header{
-        padding: 4vh 4vw;
+        padding:2.5vh 4vw;
     }
     .logo{
         font-size: 1.4rem;
@@ -55,9 +55,7 @@
 }
 
 @media(min-width:550px){
-    .header{
-        padding: 5vh 5vw;
-    }
+    
     .logo{
         font-size: 1.6rem;
     }
@@ -100,7 +98,7 @@
     }
 
     .headerBtn{
-        font-size: 1.4rem;
+        font-size: 1.1rem;
         padding: .8rem;
 
     }

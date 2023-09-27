@@ -181,6 +181,8 @@ const FirebaseContextProvider = ({ children }) => {
   }
 
   const OpenChat = (uid) => {
+    state.all_messages_array_db=[]
+    state.open_chat_user_info={}
     let all_users_data_copy = [...state.all_users_array_db]
     const open_chat_user_data = all_users_data_copy?.filter((e) => {
       return (e.uid === uid)
