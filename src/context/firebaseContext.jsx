@@ -160,6 +160,8 @@ const FirebaseContextProvider = ({ children }) => {
         // Signed in 
         const user = userCredential.user;
         console.log(user);
+        dispatch({ type: "UPDATE_STATE" })
+
         // ...
       })
       .catch((error) => {
@@ -172,6 +174,7 @@ const FirebaseContextProvider = ({ children }) => {
   const LogOut = () => {
     signOut(auth).then(() => {
       dispatch({ type: "LOG_OUT" })
+      navigate("/signin")
 
       // Sign-out successful.
     }).catch((error) => {

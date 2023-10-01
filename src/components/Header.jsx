@@ -21,15 +21,15 @@ export default function Header() {
                         </>
                             : <>
                                 <NavLink to={"signin"}> <button className="headerBtn">SignIn</button></NavLink>
-                                <p> You can only view chats when logged in</p></>}
+                               </>}
                     </div>
                 </div>
                 <div className="userNamesm">
-                   HappyChatting <span>{currentuser?.current_username}!</span>
+                Happy chatting {signin?<span>{currentuser?.current_username}</span>:null}!
                 </div>
 
                 <div className="userNamelg">
-                Start a conversation & make new friends,. Happy chatting <span>{currentuser?.current_username}!</span>
+                Start a conversation & make new friends,. Happy chatting {signin?<span>{currentuser?.current_username}</span>:null}!
                 </div>
             </header>
         </>
